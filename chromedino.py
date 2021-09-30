@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import math
 import time
 
 import pygame
@@ -302,7 +303,9 @@ class Game:
         self.obstacles_timeout_counter = 0
         SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    def step(self, action, render=False, fps=36):
+        self.data_points = [0]
+
+    def step(self, action, render=False, fps=36, raw=0, debug=False):
         global game_speed
 
         start = time.time()
@@ -353,13 +356,34 @@ class Game:
         if render:
             # time.sleep(max(1./40 - (time.time() - start), 0))
             self.clock.tick(fps)
-            rect = pygame.Rect(100, 25, 100*action, 50)
-            rectoutline = pygame.Rect(98, 25, 102, 50)
-            pygame.draw.rect(SCREEN, (255, 0, 0), rect)
-            pygame.draw.rect(SCREEN, (0, 0, 0), rectoutline, 2)
 
+            if debug:
+                # draw action
+                rect = pygame.Rect(100, 25, 100 * action, 50)
+                rectoutline = pygame.Rect(98, 25, 102, 50)
+                pygame.draw.rect(SCREEN, (255, 0, 0), rect)
+                pygame.draw.rect(SCREEN, (0, 0, 0), rectoutline, 2)
 
-    # print("y", player.info())
+                # draw input history
+                max_size = 100
+                step = 5
+
+                formatted_raw = raw*-1 + 100
+                formatted_raw = max(0, formatted_raw)
+                formatted_raw = min(200, formatted_raw)
+                self.data_points.append(formatted_raw)
+
+                while len(self.data_points) > max_size:
+                    self.data_points.pop(0)
+
+                data = list(zip(range(250, 250+len(self.data_points)*step, step), self.data_points))
+                try:
+                    pygame.draw.lines(SCREEN, (255, 0, 0), False, data)
+                except:
+                    print(data)
+                    exit(1)
+
+        # print("y", player.info())
         # print("deaths", death_count)
         pygame.display.update()
 
@@ -378,6 +402,13 @@ class Game:
                                                             self.obstacles_timeout_max) - round(game_speed / 20)
 
         return [self.player.info(), obstacle.rect.x, obstacle.rect.y]
+
+
+    @staticmethod
+    def logit(x):
+        print(x)
+        return math.log(x/(1 - x), math.e)
+
 
     def score(self):
         global points, game_speed

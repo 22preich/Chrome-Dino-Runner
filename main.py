@@ -31,7 +31,7 @@ class Neuron:
         for i in range(self.inputs):
             returns[i] = self.weights[i] * (data[i] + self.biases[i])
 
-        return self.sigmoid(sum(returns))
+        return self.sigmoid(sum(returns)), sum(returns)
 
     def copy(self):
         return self.from_weights_and_biases(self.weights, self.biases)
@@ -43,7 +43,7 @@ class Trainer:
         self.bestparams = None
         self.bestval = 0
 
-    def evaluate(self, neuro=None, render=False, times=1, limit=True, fps=36):
+    def evaluate(self, neuro=None, render=False, times=1, limit=True, fps=36, debug=False):
         neuron = neuro
         if not neuron:
             neuron = self.neuron
@@ -52,12 +52,12 @@ class Trainer:
         for _ in range(times):
             game = chromedino.Game()
             reward = 0
-            last_observation = game.step(0, render=render, fps=fps)
+            last_observation = game.step(0, render=render, fps=fps, debug=debug)
             while not game.game_over:
                 reward += 1
-                action = neuron.eval(last_observation)
+                action, raw = neuron.eval(last_observation)
                 # print(action)
-                last_observation = game.step(action, render=render, fps=fps)
+                last_observation = game.step(action, render=render, fps=fps, raw=raw, debug=debug)
                 if limit and reward > 10000:
                     game.game_over = True
             rewards.append(reward)
