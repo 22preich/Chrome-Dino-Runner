@@ -1,1 +1,4 @@
 *.bat
+/.idea
+/__pycache__
+Chrome-Dino-Runner-RML.iml
